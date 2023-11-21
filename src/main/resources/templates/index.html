@@ -1,35 +1,303 @@
-<!DOCTYPE html>
-<html>
+
+ <!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>PhoneBook</title>
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhonBook WebApp</title>
+     <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display:flex ; 
+            flex-direction: column;
+            
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width:100%;
+        }
 
-<body>
-    <h1>Phone Book</h1>
-    <form id="contact-form">
-        <label for="name">Name: </label>
-        <input type="text" id="name"  name="name" required>
+        #phone-book-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 400px;
+            text-align: center;
+        }
 
-        <label for="phoneNumbers">Phone Numbers: </label>
-        <input type="text" id="phoneNumbers"  name="phoneNumbers" required>
+        h1 {
+            color: #333;
+        }
 
-        <label for="emails">Emails: </label>
-        <input type="text" id="emails"  name="emails" required>
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
 
-        <label for="dateOfBirth">Date of Birth : </label>
-        <input type="date" id="dateOfBirth" name="dateOfBirth"   required>
+        input {
+            width: calc(100% - 12px);
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
 
+        button {
+            background-color: #4caf50;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
 
-        <button type="submit">Add Contacts</button>
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #search {
+            margin-top: 20px;
+        }
+
+        .contact-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 20px;
+            padding: 10px;
+            width: 100%;
+        }
+
+        .contact-card p {
+            margin: 5px 0;
+        }
+
+        .contact-card button {
+            background-color: #e74c3c;
+            color: #fff;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .contact-card button:hover {
+            background-color: #c0392b;
+        }
         
-    </form>
-    <div id="contacts-list">
-    <!--  contact will display here--->
+        #success-message {
+            color: #4caf50;
+            position:fixed;
+            top:0;
+            left:0;
+            height:2em;
+            width:100%;
+            
+        }
+    </style>
+</head>
+<body>
+    <div id="phone-book-container">
+        <h1>PhoneBook</h1>
+
+        <label for="name">Name:</label>
+        <input type="text" id="name" required>
+
+        <label for="phone">Phone Number:</label>
+        <input type="tel" id="phone" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email">
+
+        <label for="dob">Date of Birth:</label>
+        <input type="date" id="dob">
+
+        <button onclick="addContact()">Add Contact</button>
+        <button onclick="updateContact()">Update Contact</button>
+        
+
+        <!-- Updated id for the search input field and div -->
+        <div id="search-container">
+            <label for="search">Search:</label>
+            <input type="text" id="search-input" oninput="searchContacts()">
+        </div>
+        
+		        
+
+        <div id="contacts-container"></div>
+        <div id="success-message"></div>
     </div>
 
-    <!-- for search part code -->
+    <script>
+ // Function to add a new contact
+    function addContact() {
+        const nameInput = document.getElementById('name');
+        const phoneInput = document.getElementById('phone');
+        const emailInput = document.getElementById('email');
+        const dobInput = document.getElementById('dob');
 
+        const name = nameInput.value;
+        const phone = phoneInput.value;
+        const email = emailInput.value;
+        const dob = dobInput.value;
 
-    <script src="static/scripts.js"></script>
+        if (name && phone) {
+            const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+
+            // Check if phone number already exists
+            const existingContact = contacts.find(contact => contact.phone === phone);
+            if (existingContact) {
+                alert('Contact with the same phone number already exists.');
+                return;
+            }
+
+            const newContact = { name, phone, email, dob };
+            contacts.push(newContact);
+
+            // Sort contacts alphabetically by name
+            contacts.sort((a, b) => a.name.localeCompare(b.name));
+
+            localStorage.setItem('contacts', JSON.stringify(contacts));
+            // Display success message
+            const successMessage = document.getElementById('success-message');
+            successMessage.textContent = 'Contact added successfully!';
+
+            // Clear input fields
+            nameInput.value = '';
+            phoneInput.value = '';
+            emailInput.value = '';
+            dobInput.value = '';
+
+            // Clear the success message after a few seconds
+            setTimeout(() => {
+                successMessage.textContent = '';
+            }, 2000); // Clear message after 2 seconds
+            displayContacts();
+        } else {
+            alert('Name and at least one phone number are required.');
+        }
+    }
+        
+	    function updateContact() {
+	        const nameInput = document.getElementById('name');
+	        const phoneInput = document.getElementById('phone');
+	        const emailInput = document.getElementById('email');
+	        const dobInput = document.getElementById('dob');
+	
+	        const name = nameInput.value;
+	        const phone = phoneInput.value;
+	        const email = emailInput.value;
+	        const dob = dobInput.value;
+	
+	        if (name && phone) {
+	            const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+	
+	            // Check if the contact with the given phone number exists
+	            const existingContactIndex = contacts.findIndex(contact => contact.phone === phone);
+	
+	            if (existingContactIndex !== -1) {
+	                // Update the contact
+	                contacts[existingContactIndex] = { name, phone, email, dob };
+	
+	                // Sort contacts alphabetically by name
+	                contacts.sort((a, b) => a.name.localeCompare(b.name));
+	
+	                localStorage.setItem('contacts', JSON.stringify(contacts));
+	
+	                // Display success message
+	                const successMessage = document.getElementById('success-message');
+	                successMessage.textContent = 'Contact updated successfully!';
+	                
+	                // Clear input fields
+	                nameInput.value = '';
+	                phoneInput.value = '';
+	                emailInput.value = '';
+	                dobInput.value = '';
+	
+	                // Clear the success message after a few seconds
+	                setTimeout(() => {
+	                    successMessage.textContent = '';
+	                }, 2000); // Clear message after 2 seconds
+	                displayContacts();
+	            } else {
+	                alert('Contact with the given phone number not found.');
+	            }
+	        } else {
+	            alert('Name and at least one phone number are required.');
+	        }
+	    }
+
+        
+
+        
+        // Function to remove a contact
+        function removeContact(phone) {
+            const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+            const updatedContacts = contacts.filter(contact => contact.phone !== phone);
+            localStorage.setItem('contacts', JSON.stringify(updatedContacts));
+            displayContacts();
+        }
+
+        // Function to search contacts
+        // Updated function to get the correct id for the search input field
+        function searchContacts() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+            const searchResults = contacts.filter(contact =>
+                contact.name.toLowerCase().includes(searchTerm) ||
+                contact.phone.includes(searchTerm) ||
+                (contact.email && contact.email.toLowerCase().includes(searchTerm))
+            );
+            displayContacts(searchResults);
+        }
+
+        function editContact(phone) {
+            const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+            const contactToEdit = contacts.find(contact => contact.phone === phone);
+
+            if (contactToEdit) {
+                // Populate the form fields with the selected contact's information
+                document.getElementById('name').value = contactToEdit.name;
+                document.getElementById('phone').value = contactToEdit.phone;
+                document.getElementById('email').value = contactToEdit.email || '';
+                document.getElementById('dob').value = contactToEdit.dob || '';
+            } else {
+                alert('Contact not found for editing.');
+            }
+        }
+
+        // Function to display contacts
+        function displayContacts(contactsToShow = null) {
+            const contactsContainer = document.getElementById('contacts-container');
+            contactsContainer.innerHTML = '';
+
+            const contacts = contactsToShow || JSON.parse(localStorage.getItem('contacts')) || [];
+
+            contacts.forEach(contact => {
+                const card = document.createElement('div');
+                card.className = 'contact-card';
+
+                card.innerHTML = `
+                    <p><strong>Name:</strong> ${contact.name}</p>
+                    <p><strong>Phone:</strong> ${contact.phone}</p>
+                    ${contact.email ? `<p><strong>Email:</strong> ${contact.email}</p>` : ''}
+                    ${contact.dob ? `<p><strong>DOB:</strong> ${contact.dob}</p>` : ''}
+                    <button onclick="removeContact('${contact.phone}')">Remove</button>
+                    <button onclick="editContact('${contact.phone}')">Edit</button>
+                `;
+
+                contactsContainer.appendChild(card);
+            });
+        }
+        // Initial display of contacts
+        displayContacts();
+    </script>
 </body>
-</html>
+</html>  

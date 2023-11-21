@@ -62,6 +62,12 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		 <!-- Doma -->
+	    
+		
+		<!-- Spring Boot Starter Web -->
+    
+		
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
